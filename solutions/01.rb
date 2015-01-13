@@ -3,21 +3,17 @@ def fibonacci(number)
 end
 
 def lucas(number)
-  if number == 1
-    2
-  elsif number == 2
-    1
-  else
-    lucas(number - 1) + lucas(number - 2)
-  end
+ case number
+ when 1 then 2
+ when 2 then 1
+ else lucas(number - 1) + lucas(number - 2)
+ end
 end
 
 def series(sequence, number)
-  if sequence == 'fibonacci'
-    fibonacci(number)
-  elsif sequence == 'lucas'
-    lucas(number)
-  else
-    fibonacci(number) + lucas(number)
+  case sequence
+  when 'fibonacci' then fibonacci(number)
+  when 'lucas'     then lucas(number)
+  when 'summed'    then fibonacci(number) + lucas(number)
   end
 end
