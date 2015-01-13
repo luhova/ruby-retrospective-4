@@ -22,10 +22,9 @@ class NumberSet
   end
 
   def [](filter)
-    filtered_numbers = NumberSet.new
-    array = @numbers.select { |number| filter.matches? number }
-    array.each { |number| filtered_numbers << number }
-    filtered_numbers
+    @numbers.each_with_object(NumberSet.new) do |number, filtered_numbers|
+      filtered_numbers << number if filter.matches? number
+    end
   end
 end
 
@@ -49,27 +48,22 @@ end
 
 class TypeFilter < Filter
   def initialize(type)
-    if type == :integer
-      @filter = super() { |number| number.is_a? Integer }
-    elsif type == :real
-      @filter = super() { |number| number.is_a? Rational or number.is_a? Float}
-    else
-      @filter = super() { |number| number.is_a? Complex }
+    case type
+    when :integer then super() { |number| number.is_a? Integer }
+    when :real    then super() { |number| number.is_a? Float or
+                                          number.is_a? Rational }
+    when :complex then super() { |number| number.is_a? Complex }
     end
   end
 end
 
 class SignFilter < Filter
   def initialize(sign)
-    case
-      when sign == :positive
-        @filter = super() { |number| number > 0 }
-      when sign == :non_positive
-        @filter = super { |number| number <= 0 }
-      when sign == :negative
-        @filter = super() { |number| number < 0 }
-      when sign == :non_negative
-        @filter = super() { |number| number >= 0 }
+    case sign
+    when :positive     then super() { |number| number > 0 }
+    when :negative     then super() { |number| number < 0 }
+    when :non_positive then super() { |number| number <= 0 }
+    when :non_negative then super() { |number| number >= 0}
     end
   end
 end
