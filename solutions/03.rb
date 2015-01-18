@@ -8,12 +8,11 @@ module RBFS
 
     def data_type
       case @data
-        when String     then @data_type = :string
-        when Numeric    then @data_type = :number
-        when Symbol     then @data_type = :symbol
-        when TrueClass  then @data_type = :boolean
-        when FalseClass then @data_type = :boolean
-        else                 @data_type = :nil
+      when nil        then :nil
+      when String     then :string
+      when Numeric    then :number
+      when Symbol     then :symbol
+      else                 :boolean
       end
     end
 
@@ -22,14 +21,14 @@ module RBFS
     end
 
     def self.parse(string_data)
-      array = string_data.split(':', 2)
-      case array[0]
-        when "string"  then File.new(array[1])
-        when "symbol"  then File.new(array[1].to_sym)
-        when "number"  then File.new(array[1].to_f)
-        when "boolean" then File.new(array[1] == 'true')
-        else                File.new
-      end
+      data_type, data = string_data.split(':', 2)
+      data = case data_type
+               when 'string'  then data
+               when 'symbol'  then data.to_sym
+               when 'number'  then data.to_f
+               when 'boolean' then data == 'true'
+             end
+      File.new(data)
     end
   end
 
@@ -75,4 +74,3 @@ module RBFS
     end
   end
 end
-
