@@ -119,12 +119,12 @@ module UI
     end
 
     def row_to_string(row)
-      @components.map { |component| component_to_s component, row }.join
+      @components.map { |component| component_to_string component, row }.join
     end
 
     private
 
-    def component_to_s(component, row)
+    def component_to_string(component, row)
       if component.height > row
         component.row_to_string row
       else
