@@ -1,4 +1,19 @@
 module RBFS
+  class Parser
+    def initialize(string_data)
+      @string_data = string_data
+    end
+
+    def parse_list
+      objects_count, @string_data = @string_data.split(':', 2)
+      objects_count.to_i.times do
+        name, length, rest = @string_data.split(':', 3)
+        yield name, rest[0...length.to_i]
+        @string_data = rest[length.to_i..-1]
+      end
+    end
+  end
+
   class File
     attr_accessor :data
 
@@ -23,54 +38,59 @@ module RBFS
     def self.parse(string_data)
       data_type, data = string_data.split(':', 2)
       data = case data_type
-               when 'string'  then data
-               when 'symbol'  then data.to_sym
-               when 'number'  then data.to_f
-               when 'boolean' then data == 'true'
+              when 'string'  then data
+              when 'symbol'  then data.to_sym
+              when 'number'  then data.to_f
+              when 'boolean' then data == 'true'
              end
       File.new(data)
     end
   end
 
   class Directory
+    attr_reader :files, :directories
+
     def initialize
-      @directory = Hash.new
+      @files = {}
+      @directories = {}
     end
 
     def add_file(name, file)
-      @directory[name] = file
+      @files[name] = file
     end
 
     def add_directory(name, directory = Directory.new)
-      @directory[name] = directory
+      @directories[name] = directory
     end
 
     def [](name)
-      @directory[name]
+      @directories[name] || @files[name]
     end
 
-    def files
-      @directory.select do |key, value|
-        value.is_a? File
-      end
+     def serialize
+      "#{serialize_list(@files)}#{serialize_list(@directories)}"
     end
 
-    def directories
-      @directory.select do |key, value|
-        value.is_a? Directory
+    def self.parse(string_data)
+      directory = Directory.new
+      parser = Parser.new(string_data)
+      parser.parse_list do |name, data|
+        directory.add_file(name, File.parse(data))
       end
+      parser.parse_list do |name, data|
+        directory.add_directory(name, Directory.parse(data))
+      end
+      directory
     end
 
-    def serialize
-      string_data = "#{files.length}:"
-      files.each do |key, value|
-        string_data += "#{key}:#{value.serialize.length}:" + value.serialize
+    private
+
+    def serialize_list(objects)
+      serialized_objects = objects.map do |name, object|
+        serialized_object = object.serialize
+        "#{name}:#{serialized_object.length}:#{serialized_object}"
       end
-      string_data += "#{directories.length}:"
-      directories.each do |key, value|
-        string_data += "#{key}:#{value.serialize.length}:" + value.serialize
-      end
-      string_data
+      "#{objects.count}:#{serialized_objects.join('')}"
     end
   end
 end
