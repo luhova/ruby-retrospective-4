@@ -38,10 +38,10 @@ module RBFS
     def self.parse(string_data)
       data_type, data = string_data.split(':', 2)
       data = case data_type
-              when 'string'  then data
-              when 'symbol'  then data.to_sym
-              when 'number'  then data.to_f
-              when 'boolean' then data == 'true'
+             when 'string'  then data
+             when 'symbol'  then data.to_sym
+             when 'number'  then data.to_f
+             when 'boolean' then data == 'true'
              end
       File.new(data)
     end
